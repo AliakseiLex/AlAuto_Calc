@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ALAUTO.PL — Калькулятор импорта авто</title>
+<title>ALAUTO.PL — Калькулятор (EUR)</title>
 <style>
   :root { --gap: 12px; }
   * { box-sizing: border-box; }
@@ -29,7 +29,6 @@
   .muted { color:#666; font-size:12px; }
   .hintbox { font-size: 12px; color:#333; background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; }
   .tag { display:inline-block; padding:2px 6px; border:1px solid #dcdfe4; border-radius:999px; font-size:12px; color:#444; }
-  /* Compact summary */
   .summary { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:14px; }
   .pill { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; text-align:center; }
   .pill .label { font-size:12px; color:#666; }
@@ -39,6 +38,8 @@
   details.breakdown td { padding:8px 6px; border-bottom:1px dashed #e6e8eb; }
   details.breakdown td:last-child { text-align:right; }
   .notice { font-size:12px; color:#555; margin-top:8px; }
+  .row { display:flex; gap:8px; align-items:center; }
+  button.linkbtn { border:1px solid #dcdfe4; background:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -55,8 +56,8 @@
   </header>
 
   <div class="wrap">
-    <h1>Калькулятор импорта авто в Польшу</h1>
-    <p class="hint">Вводишь данные — итог пересчитывается автоматически.</p>
+    <h1>Калькулятор импорта авто (все суммы в EUR)</h1>
+    <p class="hint">Итог пересчитывается автоматически. Для конвертации фиксированных затрат из PLN используется курс NBP (Table A).</p>
     <p class="notice">Важно: расчёт примерный. Точный расчёт по конкретному авто и аукциону поможет составить менеджер ALAUTO.PL.</p>
 
     <div class="card">
@@ -78,26 +79,31 @@
           <div class="muted" id="shipHint"></div>
           <div class="muted">Стоимость доставки указана ориентировочно и может отличаться в зависимости от региона.</div>
         </div>
+
         <div>
           <label>Тип покупки</label>
           <select id="dealType">
             <option value="intra">Покупка внутри ЕС</option>
             <option value="export">Покупка на экспорт из ЕС (Беларусь/Украина)</option>
           </select>
-          <div class="muted">При экспорте — НДС и акциз не применяются.</div>
+          <div class="muted">При экспорте — VAT и акциз не применяются.</div>
         </div>
+
         <div>
-          <label>Курс EUR → PLN (НБП, Table A)</label>
+          <label>Курс EUR → PLN (NBP, Table A)</label>
           <div class="row">
             <input type="number" id="eurPln" min="0" step="0.0001" value="4.25" disabled />
             <button class="linkbtn" id="refreshRate">Обновить курс</button>
           </div>
-          <div class="muted" id="rateInfo">Курс подтягивается из NBP.</div>
+          <div class="muted" id="rateInfo">Курс подтягивается из NBP. В калькуляторе все суммы считаются в EUR.</div>
         </div>
+
         <div>
           <label>Стоимость авто (EUR)</label>
           <input type="number" id="priceEur" min="0" step="0.01" value="20000" />
+          <div class="muted">Комиссия аукциона: по таблице (Total € без VAT) + 23% VAT.</div>
         </div>
+
         <div>
           <label>Тип цены</label>
           <div class="seg" role="tablist">
@@ -106,6 +112,7 @@
           </div>
           <div class="muted">VAT 23% — только от нетто-цены авто.</div>
         </div>
+
         <div>
           <label>Тип топлива</label>
           <select id="fuel">
@@ -118,6 +125,7 @@
             <option value="h2">водородный</option>
           </select>
         </div>
+
         <div>
           <label>Объём двигателя</label>
           <select id="engine">
@@ -126,6 +134,7 @@
             <option value=">3500">свыше 3500 см³</option>
           </select>
         </div>
+
         <div>
           <label>Пакет услуг / комиссия дилера</label>
           <select id="dealerPlan">
@@ -137,34 +146,38 @@
             • 3000 PLN — покупка, доставка + постановка на учёт, техосмотр и, по желанию, проверка на сервисе (работы/запчасти — отдельно).
           </div>
         </div>
+
         <div>
-          <label>Доставка (PLN)</label>
-          <input type="number" id="shippingPln" min="0" step="1" />
-          <div class="muted">Можно изменить вручную.</div>
+          <label>Доставка (EUR)</label>
+          <input type="number" id="shippingEur" min="0" step="1" />
+          <div class="muted">По умолчанию конвертируется из PLN по курсу NBP, можно отредактировать вручную.</div>
         </div>
+
         <div>
           <label>Диагностика на сервисе (напоминание)</label>
           <input type="checkbox" id="diagnostics" />
         </div>
+
         <div>
-          <label>Перевод документов (PLN)</label>
-          <input type="number" id="translationPln" value="250" disabled />
-          <div class="tag">фиксировано</div>
+          <label>Перевод документов (фикс.)</label>
+          <input type="number" id="translationEur" value="0" disabled />
+          <div class="tag">250 PLN → EUR по курсу</div>
         </div>
       </div>
 
-      <!-- Compact summary -->
       <div class="summary" id="summary" style="display:none;">
-        <div class="pill"><div class="label">ИТОГО (PLN)</div><div class="value" id="sumTotal">0</div></div>
-        <div class="pill"><div class="label">Цена авто (PLN)</div><div class="value" id="sumCar">0</div></div>
-        <div class="pill"><div class="label">Доставка</div><div class="value" id="sumShip">0</div></div>
-        <div class="pill"><div class="label">Пакет/дилер</div><div class="value" id="sumDealer">0</div></div>
+        <div class="pill"><div class="label">ИТОГО (EUR)</div><div class="value" id="sumTotal">0</div></div>
+        <div class="pill"><div class="label">Цена авто (EUR)</div><div class="value" id="sumCar">0</div></div>
+        <div class="pill"><div class="label">Доставка (EUR)</div><div class="value" id="sumShip">0</div></div>
+        <div class="pill"><div class="label">Пакет/дилер (EUR)</div><div class="value" id="sumDealer">0</div></div>
+        <div class="pill"><div class="label">Комиссия аукциона (EUR)</div><div class="value" id="sumAuction">0</div></div>
       </div>
 
       <details class="breakdown" id="detailsBox" style="display:none;">
         <summary>Показать детали расчёта</summary>
         <table id="breakdown"></table>
         <div class="notice" id="planNote"></div>
+        <div class="notice" id="auctionNote"></div>
         <div class="notice" id="diagNote"></div>
       </details>
     </div>
@@ -175,13 +188,30 @@
 <script>
 (function(){
   const NBP_URL = 'https://api.nbp.pl/api/exchangerates/rates/a/eur/?format=json';
-  const AUCTION_EUR = 350; // комиссия аукциона в евро
 
-  // Updated delivery costs (PLN)
-  const countryDefaults = {
-    DE:2500, BE:2750, NL:2750, ES:4500, IT:3500, FR:3200, SE:2700, AT:2500,
-    BAL:2500, OTHER:0
-  };
+  // Auction fee table (Autorola France) — last column "Total €" WITHOUT VAT
+  // VAT 23% is added on top => feeGross = feeNet * 1.23
+  const AUCTION_VAT = 0.23;
+  const auctionBands = [
+    {min: 0,     max: 2499,  feeNet: 505},
+    {min: 2500,  max: 4999,  feeNet: 605},
+    {min: 5000,  max: 7499,  feeNet: 705},
+    {min: 7500,  max: 9999,  feeNet: 805},
+    {min: 10000, max: 14999, feeNet: 905},
+    {min: 15000, max: 19999, feeNet: 1005},
+    {min: 20000, max: 24999, feeNet: 1105},
+    {min: 25000, max: 29999, feeNet: 1205},
+    {min: 30000, max: 34999, feeNet: 1305},
+    {min: 35000, max: 39999, feeNet: 1505},
+    {min: 40000, max: 44999, feeNet: 1705},
+    {min: 45000, max: 49999, feeNet: 1905},
+    {min: 50000, max: 54999, feeNet: 2105},
+    {min: 55000, max: 59999, feeNet: 2305},
+    {min: 60000, max: Infinity, feeNet: 2405},
+  ];
+
+  // Delivery defaults in PLN (converted to EUR by rate)
+  const countryPln = { DE:2500, BE:2750, NL:2750, ES:4500, IT:3500, FR:3200, SE:2700, AT:2500, BAL:2500, OTHER:0 };
 
   const els = {
     country: document.getElementById('country'),
@@ -195,17 +225,19 @@
     fuel: document.getElementById('fuel'),
     engine: document.getElementById('engine'),
     dealerPlan: document.getElementById('dealerPlan'),
-    shippingPln: document.getElementById('shippingPln'),
-    translationPln: document.getElementById('translationPln'),
+    shippingEur: document.getElementById('shippingEur'),
+    translationEur: document.getElementById('translationEur'),
     diagnostics: document.getElementById('diagnostics'),
     summary: document.getElementById('summary'),
     sumTotal: document.getElementById('sumTotal'),
     sumCar: document.getElementById('sumCar'),
     sumShip: document.getElementById('sumShip'),
     sumDealer: document.getElementById('sumDealer'),
+    sumAuction: document.getElementById('sumAuction'),
     detailsBox: document.getElementById('detailsBox'),
     breakdown: document.getElementById('breakdown'),
     planNote: document.getElementById('planNote'),
+    auctionNote: document.getElementById('auctionNote'),
     diagNote: document.getElementById('diagNote'),
     rateInfo: document.getElementById('rateInfo')
   };
@@ -221,11 +253,21 @@
     return (eng === '<=2000') ? 0.031 : 0.186;
   }
 
-  function defaultShipping(){
-    const v = countryDefaults[els.country.value] || 0;
-    els.shippingPln.placeholder = v ? '~' + v + ' PLN' : 'введите вручную';
-    if (!els.shippingPln.value) els.shippingPln.value = v;
-    els.shipHint.textContent = v ? 'Реком. доставка: ~' + v + ' PLN' : '';
+  function calcAuctionFeeGross(carPrice){
+    const p = Math.max(0, Number(carPrice) || 0);
+    const band = auctionBands.find(b => p >= b.min && p <= b.max) || auctionBands[auctionBands.length - 1];
+    const feeNet = band.feeNet;
+    const feeVat = feeNet * AUCTION_VAT;
+    const feeGross = feeNet + feeVat;
+    return { feeNet, feeVat, feeGross, band };
+  }
+
+  function onCountryChange(){
+    const rate = parseFloat(els.eurPln.value || 0) || 4.25;
+    const shipPln = countryPln[els.country.value] || 0;
+    const shipEur = shipPln ? shipPln / rate : 0;
+    els.shippingEur.value = shipEur ? shipEur.toFixed(0) : '';
+    els.shipHint.textContent = shipPln ? ('Реком. доставка: ~' + shipPln + ' PLN (≈ ' + fmt(shipEur) + ' €)') : '';
   }
 
   async function loadNbpRate(){
@@ -239,7 +281,7 @@
       const date = (data && data.rates && data.rates[0] && data.rates[0].effectiveDate) || '';
       if(!isNaN(mid)){
         els.eurPln.value = mid.toFixed(4);
-        els.rateInfo.textContent = 'Курс EUR/PLN (NBP Table A) на ' + date + ': ' + mid;
+        els.rateInfo.textContent = 'Курс EUR/PLN (NBP Table A) на ' + date + ': ' + mid + '. Все суммы в EUR.';
       }
     }catch(e){
       console.warn('NBP error', e);
@@ -247,52 +289,61 @@
     }finally{
       els.refreshRate.disabled = false;
       els.refreshRate.textContent = 'Обновить курс';
+      updateFixedFromRate();
       calc();
     }
   }
 
+  function updateFixedFromRate(){
+    const rate = parseFloat(els.eurPln.value || 0) || 4.25;
+    els.translationEur.value = (250 / rate).toFixed(2);
+  }
+
   function calc(){
     const priceEur = parseFloat(els.priceEur.value || 0);
-    const eurPln = parseFloat(els.eurPln.value || 0);
-    const auctionPln = AUCTION_EUR * eurPln;
-    const pricePln = priceEur * eurPln;
-
+    const rate = parseFloat(els.eurPln.value || 0) || 4.25;
     const isExport = (els.dealType.value === 'export');
-    const excise = pricePln * exciseRate(isExport);
-    const shipping = parseFloat(els.shippingPln.value || 0);
-    const dealer = parseFloat(els.dealerPlan.value || 0);
-    const translation = 250;
-    const isNet = els.netto.checked;
 
-    const vatBase = (isNet && !isExport) ? pricePln : 0;
+    const excise = priceEur * exciseRate(isExport);
+    const isNet = els.netto.checked;
+    const vatBase = (isNet && !isExport) ? priceEur : 0;
     const vat = vatBase * 0.23;
 
-    const total = pricePln + excise + vat + shipping + dealer + auctionPln + translation;
+    const shipEur = parseFloat(els.shippingEur.value || 0);
+    const dealerPln = parseFloat(els.dealerPlan.value || 0);
+    const dealerEur = dealerPln / rate;
+    const translationEur = parseFloat(els.translationEur.value || 0);
 
-    // Summary pills
+    const auction = calcAuctionFeeGross(priceEur);
+    const auctionEur = auction.feeGross;
+
+    const total = priceEur + excise + vat + shipEur + dealerEur + auctionEur + translationEur;
+
     els.sumTotal.textContent = fmt(total);
-    els.sumCar.textContent = fmt(pricePln);
-    els.sumShip.textContent = fmt(shipping);
-    els.sumDealer.textContent = fmt(dealer);
+    els.sumCar.textContent = fmt(priceEur);
+    els.sumShip.textContent = fmt(shipEur);
+    els.sumDealer.textContent = fmt(dealerEur);
+    els.sumAuction.textContent = fmt(auctionEur);
     els.summary.style.display = 'grid';
     els.detailsBox.style.display = 'block';
 
-    // Breakdown
     const rows = [
-      ['Цена авто (PLN)', pricePln],
+      ['Цена авто (EUR)', priceEur],
       [isExport ? 'Акциз (экспорт — не применяется)' : 'Акциз', excise],
       [isExport ? 'VAT 23% (экспорт — не применяется)' : (isNet ? 'VAT 23% (от нетто)' : 'VAT (брутто — не применяется)'), vat],
-      ['Доставка', shipping],
-      ['Пакет услуг / комиссия дилера', dealer],
-      ['Комиссия аукциона (350 €)', auctionPln],
-      ['Перевод документов (фикс.)', translation]
-    ].map(function(row){ return '<tr><td>'+row[0]+'</td><td>'+fmt(row[1])+'</td></tr>'; }).join('');
+      ['Доставка (EUR)', shipEur],
+      ['Пакет услуг / комиссия дилера (EUR)', dealerEur],
+      ['Комиссия аукциона (по таблице + 23% VAT)', auctionEur],
+      ['Перевод документов (≈ 250 PLN)', translationEur]
+    ].map(r => '<tr><td>'+r[0]+'</td><td>'+fmt(r[1])+'</td></tr>').join('');
     els.breakdown.innerHTML = rows;
 
-    // Notes
     els.planNote.textContent = (String(els.dealerPlan.value) === '3000')
-      ? 'Пакет 3000 PLN: покупка, доставка + постановка на учёт, техосмотр и, по желанию, проверка на сервисе (работы/запчасти оплачиваются отдельно).'
-      : 'Пакет 2000 PLN: покупка и доставка. Постановка на учёт и техосмотр — самостоятельно и за счёт клиента.';
+      ? 'Пакет 3000 PLN: покупка, доставка + постановка на учёт, техосмотр и, по желанию, проверка на сервисе (работы/запчасти оплачиваются отдельно). Сумма конвертирована в EUR по курсу NBP.'
+      : 'Пакет 2000 PLN: покупка и доставка. Постановка на учёт и техосмотр — самостоятельно и за счёт клиента. Сумма конвертирована в EUR по курсу NBP.';
+
+    els.auctionNote.textContent =
+      'Комиссия аукциона: ' + fmt(auction.feeNet) + ' € (без VAT) + 23% VAT (' + fmt(auction.feeVat) + ' €) = ' + fmt(auction.feeGross) + ' €.';
 
     els.diagNote.textContent = els.diagnostics.checked
       ? 'Отмечено: нужна диагностика на сервисе (стоимость согласовывается отдельно, в итог не входит).'
@@ -300,19 +351,16 @@
   }
 
   // Init
-  defaultShipping();
+  onCountryChange();
   loadNbpRate();
+  updateFixedFromRate();
   calc();
 
-  // Auto-recalc on changes
-  ['input','change'].forEach(function(evt){
-    document.addEventListener(evt, function(e){
-      if (e.target === els.country) defaultShipping();
-      calc();
-    });
-  });
+  ['input','change'].forEach(evt => document.addEventListener(evt, e => {
+    if (e.target === els.country) onCountryChange();
+    calc();
+  }));
 
-  // Manual refresh of rate
   document.getElementById('refreshRate').addEventListener('click', loadNbpRate);
 })();
 </script>
